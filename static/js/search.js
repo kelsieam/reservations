@@ -30,8 +30,8 @@ const endTime = document.getElementById('end-time');
 const availableTimesCard = document.getElementById('available-times-card');
 
 
-function prettyTimesTwo(timeTwo) {
-    const time = new Date(timeTwo);
+function shorterTimes(inputTime) {
+    const time = new Date(inputTime);
     let hours;
     const mins = ('0'+ time.getMinutes()).slice(-2).toString()
     if (time.getHours() > 12) {
@@ -45,7 +45,6 @@ function prettyTimesTwo(timeTwo) {
         hours = time.getHours();
         return hours.toString() + ':' + mins + ' am'
     }
-
 }
 
 // changes 'Thu, 27 Jul 2023 20:30:00 GMT' from the database to '2023-07-27 20:30:00'
@@ -130,13 +129,14 @@ searchButton.addEventListener('click', function(evt) {
         let startIndex;
         let endIndex;
         
+        // getting all possible times in the option time range
         if (data.start_time && data.end_time) {
 
             if (data.start_time > data.end_time) {
                 alert('Please select a valid time range');
                 return;
             }
-            // getting all possible times in the option time range
+            
             startIndex = allPossibleTimes.indexOf(data.start_time.toString());
             endIndex = allPossibleTimes.indexOf(data.end_time.toString());
             selectedTimes = allPossibleTimes.slice(startIndex, endIndex + 1);
@@ -171,7 +171,7 @@ searchButton.addEventListener('click', function(evt) {
             timeDisplayButton.setAttribute('display', 'inline');
             timeDisplayButton.setAttribute('class', 'time-display');
 
-            let finalTime = prettyTimesTwo(time);
+            let finalTime = shorterTimes(time);
             // console.log(finalTime);
             timeDisplayButton.innerHTML = finalTime;
             timeDisplayButton.addEventListener(('click'), function(evt) {
@@ -227,7 +227,7 @@ addEventListener("DOMContentLoaded", (event) => {
 
             // const reservationTimeNumeric = toNumericDate(reservationTime).toString();
             // console.log(reservationTimeNumeric);
-            const reservationTimePretty = prettyTimesTwo(reservationTime);
+            const reservationTimePretty = shorterTimes(reservationTime);
             const reservationTimeNumericDate = new Date(reservationTime);
             const reservationDay = reservationTimeNumericDate.getDate().toString();
             const reservationMonth = (reservationTimeNumericDate.getMonth() + 1).toString();
