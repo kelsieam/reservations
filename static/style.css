@@ -1,0 +1,11 @@
+.time-display {
+    padding: 5px;
+    margin: 5px;
+    background-color:aliceblue;
+    min-width: 80px;
+    display: inline-block;
+    border: 1px solid;
+    border-color: gray;
+    border-radius: 3px;
+    align-items: center;
+}

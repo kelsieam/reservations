@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+<!-- <style>
+    #user-greeting {
+        min-height: 40px;
+    }
+</style> -->
+
+
+{% block body %}
+<div class="row">
+    <h2 id="user-greeting" style="min-height: 40px;"></h2>
+</div>
+<div class="row">
+    <div class="col-6">
+        <div class="row">
+            <div class="card">
+                <div class="card-body">
+                    <form action="search" method="POST" id="search-date-form">
+                        Select a date to view available reservations:
+                        <br>
+                        <input type="date" id="date" name="date" class="mb-3" required>
+                        <br>
+                        Optional time range:
+                        <br>
+                        <select id="start-time" name="start-time" value="Start time" class="mb-1">
+                            <option value="" disabled selected hidden>Start time</option>
+                        </select>
+                        <br>
+                        <select id="end-time" name="end-time" value="End time" class="mb-3">
+                            <option value="" disabled selected hidden>End time</option>
+                        </select>
+                        <br>
+                        <input type="submit" class="btn btn-secondary" id="search-date-submit">
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="card">
+                <div class="card-body" id="reservation-display">
+                    <ul id="reservation-display-list">
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="card" style="display:none" id="available-times-card">
+            <div class="card-body">
+                <div id="available-times">
+                    <h5 id="times-heading" style="display:none">Select an available time below to make a new reservation</h5>
+                    <p id="no-times" style="display:none">
+                    There are no available appointments on the day you selected. Please select a different day.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script src="/static/js/search.js"></script>
+{% endblock %}
