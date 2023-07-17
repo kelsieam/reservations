@@ -8,10 +8,14 @@ const allPossibleTimes = [
     '21:00:00','21:30:00','22:00:00','22:30:00','23:00:00','23:30:00'
 ]
 
+// adds user input date to allPossibleTimes
+// to compare reservations and available 
+// times on a given day
 function addDate(time, date) {
   return date + ' ' + time;
 }
 
+// makes allPossibleTimes more readable for options on dropdown menu
 function prettyTimes(time) {
     if (Number(time.slice(0,2)) > 12) {
         const ampmTime = (Number(time.slice(0, 2)) - 12).toString()
@@ -27,6 +31,7 @@ function prettyTimes(time) {
         return finalTime;
     }
 }
+
 
 const dateInput = document.getElementById('date');
 const startTime = document.getElementById('start-time');
@@ -50,9 +55,9 @@ allPossibleTimes.forEach(time => {
 })
 
 
+// changes '04:30:00' to '4:30 am'
 function shorterTimes(inputTime) {
     const time = new Date(inputTime);
-    // console.log(time);
     let hours;
     const mins = ('0'+ time.getMinutes()).slice(-2).toString()
     if (time.getHours() > 12) {
@@ -88,23 +93,17 @@ function toNumericDate(wordyString) {
 }
 
 
-
 const searchButton = document.getElementById('search-date-submit');
 searchButton.addEventListener('click', function(evt) {
     evt.preventDefault();
     const selectedDateForm = new FormData(document.getElementById('search-date-form'));
-    // i think i need to send the date and times in a url so that i can make them date 
-    // objects first to account for timezone change
     const chosenDate = dateInput.value;
     const chosenStart = startTime.value;
     let chosenEnd = endTime.value;
-    // let chosenEnd;
     if (!chosenEnd) {
         chosenEnd = '23:59:59';
     }
-    console.log(chosenEnd);
-    // console.log(chosenEnd);
-    console.log(chosenDate, chosenStart, chosenEnd);
+
     const startToSend = new Date(chosenDate + ' ' + chosenStart).toUTCString();
     const endToSend = new Date(chosenDate + ' ' + chosenEnd).toUTCString();
     console.log(chosenDate, startToSend, endToSend);
@@ -113,6 +112,7 @@ searchButton.addEventListener('click', function(evt) {
         return;
     }
 
+    // converting to Date before sending to account for time zones
     fetch((`/search/${chosenDate}---${startToSend}---${endToSend}`), {
         method: 'POST',
         body: selectedDateForm
@@ -124,60 +124,49 @@ searchButton.addEventListener('click', function(evt) {
         console.log(data);
         availableTimesCard.setAttribute('style', 'display:block')
         const reservations = data.reservations;
+        // takenTimes holds all reservations on a given day in 
+        // a 'YYYY-MM-DD HH:MM:SS' format
         let takenTimes = [];
-        console.log(data.date);
-        // const selectedDate = toNumericDate(new Date(data.date));
-        // console.log(selectedDate);
         reservations.forEach(reservation => {
             console.log(reservation.start);
             const reservedTime = new Date(reservation.start);
             console.log(reservedTime);
-            // console.log(reservedTime);
             const reservedTimeShorter = toNumericDate(reservedTime);
             takenTimes.push(reservedTimeShorter);
             
         })
-        // console.log(takenTimes);
-
+        
         let selectedTimes = [];
         let startIndex;
         let endIndex;
         let allPossibleTimesWithDate = [];
         
         allPossibleTimes.forEach(time => allPossibleTimesWithDate.push(addDate(time, data.date)))
-        console.log(allPossibleTimesWithDate);
-        // const chosenStart = startTime.value;
-        // let chosenEndTime = endTime.value;
+
         // getting all possible times within the optional time range
         if (chosenStart != '00:00:00' && chosenEnd != '23:59:59') {
-            console.log('in if data.start_time and data.end_time');
+            // console.log('in if chosenStart and chosenEnd');
             startIndex = allPossibleTimesWithDate.indexOf(chosenDate + ' ' + chosenStart);
             endIndex = allPossibleTimesWithDate.indexOf(chosenDate + ' ' + chosenEnd);
             selectedTimes = allPossibleTimesWithDate.slice(startIndex, endIndex + 1);
         }
         else if (chosenStart) {
-            console.log('in elif data.start_time')
+            // console.log('in elif chosenStart');
             startIndex = allPossibleTimesWithDate.indexOf(data.start_time.toString());
             selectedTimes = allPossibleTimesWithDate.slice(startIndex);
         }
         else if (chosenEnd  != '23:59:59') {
-            console.log('in elif data.end_time')
+            // console.log('in elif chosenEnd');
             endIndex = allPossibleTimesWithDate.indexOf(data.end_time.toString());
             selectedTimes = allPossibleTimesWithDate.slice(0, endIndex);
         } else {
-            console.log('in else')
+            // console.log('in else')
             selectedTimes = allPossibleTimesWithDate.slice();
         }
-        console.log(selectedTimes);
-        // selectedTimes = selectedTimes.map(time => data.date + ' ' + time);
-        // console.log(selectedTimes);
-        console.log(takenTimes);
 
+        // takes all possible times on the given date and filters out the 
+        // times that are already reserved
         const availableTimes = selectedTimes.filter(x => !takenTimes.includes(x));
-
-        console.log(availableTimes);
-        
-
         
         const noTimes = document.getElementById('no-times');
         noTimes.setAttribute('style', 'display:none');
@@ -193,16 +182,15 @@ searchButton.addEventListener('click', function(evt) {
 
         const availableTimeDisplay = document.getElementById('available-times');
         availableTimeDisplay.innerHTML = '';
+        // creating the buttons for available reservation times
         availableTimes.forEach(time => {
-            // console.log(time);
-
             const timeDisplayButton = document.createElement('div');
             timeDisplayButton.setAttribute('display', 'inline');
             timeDisplayButton.setAttribute('class', 'time-display');
 
             let finalTime = shorterTimes(time);
-            // console.log(finalTime);
             timeDisplayButton.innerHTML = finalTime;
+            // adding event listener to book a reservation on click
             timeDisplayButton.addEventListener(('click'), function(evt) {
                 const dateTime = new Date(time)
                 const url = dateTime.toUTCString();
@@ -220,7 +208,7 @@ searchButton.addEventListener('click', function(evt) {
                     }
                 })
             })
-            
+
             availableTimeDisplay.appendChild(timeDisplayButton);
         
             if (startIndex > endIndex) {
@@ -252,14 +240,15 @@ addEventListener("DOMContentLoaded", (event) => {
         
         let existingReservations = [];
 
+        // sorting user's reservations by date instead of by reservation_id
         data.reservations.sort((a, b) => {
             const dateA = new Date(a.start);
             const dateB = new Date(b.start);
             return dateA - dateB;
         });
 
+        // making user's reservations more readable
         data.reservations.forEach(reservation => {
-            
             const reservationTime = toNumericDate(reservation.start);
             const reservationTimePretty = shorterTimes(reservationTime);
             const reservationTimeNumericDate = new Date(reservationTime);

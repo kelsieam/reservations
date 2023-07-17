@@ -31,18 +31,19 @@ def user_info():
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
-    if request.method == 'GET':
-        return render_template('login.html')
-    
-    if request.method == 'POST':    
+    if request.method == 'POST':
         username = request.form.get('username')
+        print(username)
         user = User.query.filter_by(username=username).first()
+        print(user)
 
         if user:
             session['username'] = username
             return redirect('/search')
-        
-        return {'success': False, 'message': 'No user by that name'}
+        else:
+            return {'success': False, 'message': 'No user by that name'}
+    
+    return render_template('login.html')
 
 
 @app.route('/search', methods=['GET'])
