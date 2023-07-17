@@ -43,7 +43,7 @@ class Reservation(db.Model):
                         autoincrement=True,
                         primary_key=True)
     # saving datetime as a string so it doesn't apply a timezone
-    start = db.Column(db.String, 
+    start = db.Column(db.DateTime, 
                       nullable=False,
                       unique=True)
     user_id = db.Column(db.Integer,

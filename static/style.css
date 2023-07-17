@@ -9,3 +9,7 @@
     border-radius: 3px;
     align-items: center;
 }
+
+body {
+    background-image: '/static/uploads/jason-leung-poI7DelFiVA-unsplash.jpg'
+}

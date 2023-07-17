@@ -1,18 +1,45 @@
 {% extends 'base.html' %}
-
-<!-- <style>
-    #user-greeting {
-        min-height: 40px;
+{% block head %}
+<style>
+body {
+    background-image: url(/static/uploads/jason-leung-poI7DelFiVA-unsplash.jpg);
+    background-attachment: fixed;
+    background-size: 100%;
+    background-blend-mode: darken;
+}
+.message-holder {
+      word-break: normal;
+      overflow-wrap: break-word;
+      max-width: 100%;
+      overflow-y: auto;
+      max-height: 420px;
+      min-height: 420px;
+      padding: 5px;
+      background-color: white;
+      border-radius: 10px;
+      margin: 3px;
     }
-</style> -->
-
+.card {
+    opacity: 95%;
+    margin: 5px;
+}
+/* .card-body {
+    flood-opacity: 95%;
+    margin: 5px;
+} */
+</style>
+{% endblock %}
 
 {% block body %}
 <div class="row">
-    <h2 id="user-greeting" style="min-height: 40px;"></h2>
+    <div class="card">
+        <div class="card-body">
+            <h2 id="user-greeting" style="min-height: 40px;"></h2>
+        </div>
+    </div>
 </div>
 <div class="row">
-    <div class="col-6">
+    <div class="col-3">
         <div class="row">
             <div class="card">
                 <div class="card-body">
@@ -39,28 +66,21 @@
         <div class="row">
             <div class="card">
                 <div class="card-body" id="reservation-display">
-                    <ul id="reservation-display-list">
-
-                    </ul>
+                    <ul id="reservation-display-list"></ul>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-6">
+    <div class="col-9">
         <div class="card" style="display:none" id="available-times-card">
             <div class="card-body">
-                <div id="available-times">
-                    <h5 id="times-heading" style="display:none">Select an available time below to make a new reservation</h5>
-                    <p id="no-times" style="display:none">
-                    There are no available appointments on the day you selected. Please select a different day.
-                    </p>
-                </div>
+                <h5 id="times-heading" style="display:none">Select an available time below to make a new reservation</h5>
+                    <h5 id="no-times" style="display:none">No available appointments - please select a different day</h5>
+                <div id="available-times"></div>
             </div>
         </div>
     </div>
 </div>
-
-
 
 
 <script src="/static/js/search.js"></script>

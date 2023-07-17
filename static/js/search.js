@@ -8,6 +8,10 @@ const allPossibleTimes = [
     '21:00:00','21:30:00','22:00:00','22:30:00','23:00:00','23:30:00'
 ]
 
+function addDate(time, date) {
+  return date + ' ' + time;
+}
+
 function prettyTimes(time) {
     if (Number(time.slice(0,2)) > 12) {
         const ampmTime = (Number(time.slice(0, 2)) - 12).toString()
@@ -24,42 +28,10 @@ function prettyTimes(time) {
     }
 }
 
-
+const dateInput = document.getElementById('date');
 const startTime = document.getElementById('start-time');
 const endTime = document.getElementById('end-time');
 const availableTimesCard = document.getElementById('available-times-card');
-
-
-function shorterTimes(inputTime) {
-    const time = new Date(inputTime);
-    let hours;
-    const mins = ('0'+ time.getMinutes()).slice(-2).toString()
-    if (time.getHours() > 12) {
-        hours = time.getHours() - 12;
-        return hours.toString() + ':' + mins + ' pm'
-    } 
-    else if (time.getHours() === 0) {
-        hours = time.getHours() + 12;
-        return hours.toString() + ':' + mins + ' am'
-    } else {
-        hours = time.getHours();
-        return hours.toString() + ':' + mins + ' am'
-    }
-}
-
-// changes 'Thu, 27 Jul 2023 20:30:00 GMT' from the database to '2023-07-27 20:30:00'
-// function toNumericDate(wordyDate) {
-//     const year = wordyDate.getFullYear();
-//     const month = String(wordyDate.getMonth() + 1).padStart(2, "0");
-//     const day = String(wordyDate.getDate()).padStart(2, "0");
-//     const hours = String(wordyDate.getHours()).padStart(2, "0");
-//     const minutes = String(wordyDate.getMinutes()).padStart(2, "0");
-//     const seconds = String(wordyDate.getSeconds()).padStart(2, "0");
-
-//     const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-//     return formattedDate;
-// }
-
 
 allPossibleTimes.forEach(time => {
     const timeOptionStart = document.createElement('option');
@@ -78,16 +50,70 @@ allPossibleTimes.forEach(time => {
 })
 
 
-function addDate(time, date) {
-  return date + ' ' + time
+function shorterTimes(inputTime) {
+    const time = new Date(inputTime);
+    // console.log(time);
+    let hours;
+    const mins = ('0'+ time.getMinutes()).slice(-2).toString()
+    if (time.getHours() > 12) {
+        hours = time.getHours() - 12;
+        return hours.toString() + ':' + mins + ' pm';
+    } 
+    else if (time.getHours() === 12) {
+        hours = time.getHours();
+        return hours.toString() + ':' + mins + ' pm';
+    }
+    else if (time.getHours() === 0) {
+        hours = time.getHours() + 12;
+        return hours.toString() + ':' + mins + ' am'
+    } else {
+        hours = time.getHours();
+        return hours.toString() + ':' + mins + ' am'
+    }
 }
+
+
+// changes 'Thu, 27 Jul 2023 20:30:00 GMT' from the database to '2023-07-27 20:30:00'
+function toNumericDate(wordyString) {
+    const wordyDate = new Date(wordyString);
+    const year = wordyDate.getFullYear();
+    const month = String(wordyDate.getMonth() + 1).padStart(2, "0");
+    const day = String(wordyDate.getDate()).padStart(2, "0");
+    const hours = String(wordyDate.getHours()).padStart(2, "0");
+    const minutes = String(wordyDate.getMinutes()).padStart(2, "0");
+    const seconds = String(wordyDate.getSeconds()).padStart(2, "0");
+
+    const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    return formattedDate;
+}
+
 
 
 const searchButton = document.getElementById('search-date-submit');
 searchButton.addEventListener('click', function(evt) {
     evt.preventDefault();
     const selectedDateForm = new FormData(document.getElementById('search-date-form'));
-    fetch(('/search'), {
+    // i think i need to send the date and times in a url so that i can make them date 
+    // objects first to account for timezone change
+    const chosenDate = dateInput.value;
+    const chosenStart = startTime.value;
+    let chosenEnd = endTime.value;
+    // let chosenEnd;
+    if (!chosenEnd) {
+        chosenEnd = '23:59:59';
+    }
+    console.log(chosenEnd);
+    // console.log(chosenEnd);
+    console.log(chosenDate, chosenStart, chosenEnd);
+    const startToSend = new Date(chosenDate + ' ' + chosenStart).toUTCString();
+    const endToSend = new Date(chosenDate + ' ' + chosenEnd).toUTCString();
+    console.log(chosenDate, startToSend, endToSend);
+    if (chosenStart > chosenEnd) {
+        alert('Please select a valid time range');
+        return;
+    }
+
+    fetch((`/search/${chosenDate}---${startToSend}---${endToSend}`), {
         method: 'POST',
         body: selectedDateForm
     })
@@ -98,75 +124,78 @@ searchButton.addEventListener('click', function(evt) {
         console.log(data);
         availableTimesCard.setAttribute('style', 'display:block')
         const reservations = data.reservations;
-        const takenTimes = [];
-        
+        let takenTimes = [];
+        console.log(data.date);
+        // const selectedDate = toNumericDate(new Date(data.date));
+        // console.log(selectedDate);
         reservations.forEach(reservation => {
+            console.log(reservation.start);
             const reservedTime = new Date(reservation.start);
             console.log(reservedTime);
-            // const dateStr = "Thu Jul 27 2023 13:30:00 GMT-0700 (Pacific Daylight Time)";
-            // const date = new Date(dateStr);
-
-            // const year = date.getFullYear();
-            // const month = String(date.getMonth() + 1).padStart(2, "0");
-            // const day = String(date.getDate()).padStart(2, "0");
-            // const hours = String(date.getHours()).padStart(2, "0");
-            // const minutes = String(date.getMinutes()).padStart(2, "0");
-            // const seconds = String(date.getSeconds()).padStart(2, "0");
-
-            // const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-
-            // console.log(formattedDate);
-
-            // formattedDate = toNumericDate(reservedTime);
-            // console.log(formattedDate);
-
-            takenTimes.push(reservedTime);
+            // console.log(reservedTime);
+            const reservedTimeShorter = toNumericDate(reservedTime);
+            takenTimes.push(reservedTimeShorter);
             
         })
-        console.log(takenTimes);
+        // console.log(takenTimes);
 
         let selectedTimes = [];
         let startIndex;
         let endIndex;
+        let allPossibleTimesWithDate = [];
         
-        // getting all possible times in the option time range
-        if (data.start_time && data.end_time) {
-
-            if (data.start_time > data.end_time) {
-                alert('Please select a valid time range');
-                return;
-            }
-            
-            startIndex = allPossibleTimes.indexOf(data.start_time.toString());
-            endIndex = allPossibleTimes.indexOf(data.end_time.toString());
-            selectedTimes = allPossibleTimes.slice(startIndex, endIndex + 1);
+        allPossibleTimes.forEach(time => allPossibleTimesWithDate.push(addDate(time, data.date)))
+        console.log(allPossibleTimesWithDate);
+        // const chosenStart = startTime.value;
+        // let chosenEndTime = endTime.value;
+        // getting all possible times within the optional time range
+        if (chosenStart != '00:00:00' && chosenEnd != '23:59:59') {
+            console.log('in if data.start_time and data.end_time');
+            startIndex = allPossibleTimesWithDate.indexOf(chosenDate + ' ' + chosenStart);
+            endIndex = allPossibleTimesWithDate.indexOf(chosenDate + ' ' + chosenEnd);
+            selectedTimes = allPossibleTimesWithDate.slice(startIndex, endIndex + 1);
         }
-        else if (data.start_time) {
-            startIndex = allPossibleTimes.indexOf(data.start_time.toString());
-            selectedTimes = allPossibleTimes.slice(startIndex);
+        else if (chosenStart) {
+            console.log('in elif data.start_time')
+            startIndex = allPossibleTimesWithDate.indexOf(data.start_time.toString());
+            selectedTimes = allPossibleTimesWithDate.slice(startIndex);
         }
-        else if (data.end_time) {
-            endIndex = allPossibleTimes.indexOf(data.end_time.toString());
-            selectedTimes = allPossibleTimes.slice(0, endIndex);
+        else if (chosenEnd  != '23:59:59') {
+            console.log('in elif data.end_time')
+            endIndex = allPossibleTimesWithDate.indexOf(data.end_time.toString());
+            selectedTimes = allPossibleTimesWithDate.slice(0, endIndex);
         } else {
-            selectedTimes = allPossibleTimes.slice();
+            console.log('in else')
+            selectedTimes = allPossibleTimesWithDate.slice();
         }
+        console.log(selectedTimes);
+        // selectedTimes = selectedTimes.map(time => data.date + ' ' + time);
+        // console.log(selectedTimes);
+        console.log(takenTimes);
 
-        selectedTimes = selectedTimes.map(time => data.date + ' ' + time);
         const availableTimes = selectedTimes.filter(x => !takenTimes.includes(x));
-        // console.log(availableTimes);
 
-        if (availableTimes.length === 0) {
-            const noTimes = document.getElementById('no-times');
-            noTimes.setAttribute('display', 'block');
-        }
+        console.log(availableTimes);
+        
+
+        
+        const noTimes = document.getElementById('no-times');
+        noTimes.setAttribute('style', 'display:none');
 
         const timesHeading = document.getElementById('times-heading');
         timesHeading.setAttribute('style', 'display:block');
 
+        if (availableTimes.length === 0) {
+            noTimes.setAttribute('style', 'display:block');
+
+            timesHeading.setAttribute('style', 'display:none');
+        } 
+
         const availableTimeDisplay = document.getElementById('available-times');
+        availableTimeDisplay.innerHTML = '';
         availableTimes.forEach(time => {
-            console.log(time);
+            // console.log(time);
+
             const timeDisplayButton = document.createElement('div');
             timeDisplayButton.setAttribute('display', 'inline');
             timeDisplayButton.setAttribute('class', 'time-display');
@@ -175,7 +204,9 @@ searchButton.addEventListener('click', function(evt) {
             // console.log(finalTime);
             timeDisplayButton.innerHTML = finalTime;
             timeDisplayButton.addEventListener(('click'), function(evt) {
-                const url = time.toString();
+                const dateTime = new Date(time)
+                const url = dateTime.toUTCString();
+                console.log(url)
                 fetch((`/make-reservation/${url}`), {
                     method: 'POST',
                 })
@@ -184,6 +215,9 @@ searchButton.addEventListener('click', function(evt) {
                 })
                 .then((responseJson) => {
                     console.log(responseJson);
+                    if (responseJson.success) {
+                        timeDisplayButton.remove();
+                    }
                 })
             })
             
@@ -211,35 +245,38 @@ addEventListener("DOMContentLoaded", (event) => {
 
         const reservationDisplay = document.getElementById('reservation-display');
         const reservationDisplayList = document.getElementById('reservation-display-list');
-        // console.log(data.reservations)
         const reservationDisplayHeading = document.createElement('h3');
+
         reservationDisplayHeading.innerHTML = `${firstName}'s Reservations`
         reservationDisplay.prepend(reservationDisplayHeading);
         
-        data.reservations.forEach(reservation => {
-            console.log(reservation);
-            const reservationTime = new Date(reservation.start);
-            // const reservationHour = reservationTime.getHours();
-            // console.log(reservationHour);
-            
-            // const reservationMinutes = reservationTime.getMinutes();
-            // console.log(reservationMinutes);
+        let existingReservations = [];
 
-            // const reservationTimeNumeric = toNumericDate(reservationTime).toString();
-            // console.log(reservationTimeNumeric);
+        data.reservations.sort((a, b) => {
+            const dateA = new Date(a.start);
+            const dateB = new Date(b.start);
+            return dateA - dateB;
+        });
+
+        data.reservations.forEach(reservation => {
+            
+            const reservationTime = toNumericDate(reservation.start);
             const reservationTimePretty = shorterTimes(reservationTime);
             const reservationTimeNumericDate = new Date(reservationTime);
             const reservationDay = reservationTimeNumericDate.getDate().toString();
             const reservationMonth = (reservationTimeNumericDate.getMonth() + 1).toString();
             const reservationDate = reservationMonth + "/" + reservationDay;
 
-            const reservationEntry = document.createElement('li');
-            reservationEntry.innerHTML = `${reservationDate}: ${reservationTimePretty}`;
+            existingReservations.push(`${reservationDate}: ${reservationTimePretty}`)
+        });
 
-            
+        existingReservations.forEach(reservation => {
+            const reservationEntry = document.createElement('li');
+            reservationEntry.setAttribute('class', 'list-group-item');
+            reservationEntry.innerHTML = reservation;
+
             reservationDisplayList.appendChild(reservationEntry);
         })
+        
     })
 });
-
-
