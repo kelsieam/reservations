@@ -7,19 +7,6 @@ from model import db, connect_to_db, User, Reservation
 import server
 
 
-
-
-# def create_user(username, name):
-#     user = User(username=username, name=name)
-
-#     return user
-
-# def create_reservation(start, user_id):
-#     reservation = Reservation(start=start, user_id=user_id)
-
-#     return reservation
-
-
 os.system('dropdb reservations')
 os.system('createdb reservations')
 
